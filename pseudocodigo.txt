@@ -1,0 +1,86 @@
+INICIO
+
+  Definir las constantes de las reglas:
+
+  - 200 horas de referencia
+  - 60 puntos máximos por horas ahorradas
+  - 40 puntos máximos por reglas claras
+  - 10 puntos por cada aplicación
+  - Estabilidad baja = 40 puntos
+  - Estabilidad media = 20 puntos
+  - Estabilidad alta = 0 puntos
+  - Beneficio mínimo para Quick Win = 60
+  - Complejidad máxima para Quick Win = 40
+
+  Definir una lista con al menos 8 procesos.
+
+  Cada proceso debe tener:
+  - nombre
+  - transacciones_mes
+  - minutos_por_transaccion
+  - cantidad_aplicaciones
+  - porcentaje_reglas_claras
+  - estabilidad
+
+  PARA cada proceso de la lista HACER
+
+      Calcular las horas ahorradas al mes:
+
+      horas = (transacciones_mes × minutos_por_transaccion) / 60
+
+      Redondear las horas a 1 decimal.
+
+      SI las horas son mayores a 200:
+          horas_para_puntaje = 200
+      SI NO:
+          horas_para_puntaje = horas
+
+      Calcular el beneficio:
+
+      beneficio = (horas_para_puntaje / 200 × 60) +
+                  (porcentaje_reglas_claras / 100 × 40)
+
+      Calcular la complejidad:
+
+      complejidad = (cantidad_aplicaciones × 10) +
+                    puntos según la estabilidad
+
+      (baja = 40, media = 20, alta = 0)
+
+      SI complejidad > 100:
+          complejidad = 100
+
+      Clasificar el proceso:
+
+      SI beneficio >= 60 Y complejidad <= 40:
+          clasificacion = "Quick Win"
+
+      SINO SI beneficio < 60 Y complejidad > 40:
+          clasificacion = "Descartado"
+
+      SINO:
+          clasificacion = "Candidato"
+
+      Guardar el nombre del proceso, horas,
+      beneficio, complejidad y clasificación.
+
+  FIN PARA
+
+  Ordenar los procesos de mayor a menor beneficio.
+
+  Mostrar todos los resultados.
+
+  total_horas = 0
+
+  PARA cada resultado HACER
+
+      SI la clasificación es "Quick Win":
+          Mostrar el proceso
+          total_horas = total_horas + horas
+
+  FIN PARA
+
+  Mostrar el total de horas de los procesos
+  clasificados como "Quick Win".
+
+FIN
