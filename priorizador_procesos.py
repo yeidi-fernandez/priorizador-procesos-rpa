@@ -23,6 +23,23 @@ CLASIFICACION_DESCARTADO = "Descartado"
 ANCHO_NOMBRE = 30
 ANCHO_COLUMNA = 13
 
+# Revisión de los datos
+CAMPOS_OBLIGATORIOS = [
+    "nombre",
+    "transacciones_mes",
+    "minutos_por_transaccion",
+    "cantidad_aplicaciones",
+    "porcentaje_reglas_claras",
+    "estabilidad",
+]
+CAMPOS_NUMERICOS = [
+    "transacciones_mes",
+    "minutos_por_transaccion",
+    "cantidad_aplicaciones",
+    "porcentaje_reglas_claras",
+]
+NOMBRE_DESCONOCIDO = "Proceso sin nombre"
+
 PROCESOS = [
     {
         "nombre": "Conciliación bancaria",
@@ -87,8 +104,46 @@ PROCESOS = [
         "cantidad_aplicaciones": 2,
         "porcentaje_reglas_claras": 70,
         "estabilidad": "media",
-    },
+ 
+   },
 ]
+
+def limpiar_texto(valor):
+    """Devuelve el valor como texto, en minúscula y sin espacios a los lados."""
+    return str(valor).strip().lower()
+
+
+def es_numero_valido(valor):
+    """Indica si el valor es un número mayor o igual a cero."""
+    if isinstance(valor, bool):
+        return False
+    if not isinstance(valor, (int, float)):
+        return False
+    return valor >= 0
+
+
+def obtener_nombre(proceso):
+    """Devuelve el nombre del proceso, o un texto fijo si no lo tiene."""
+    if isinstance(proceso, dict) and "nombre" in proceso:
+        return str(proceso["nombre"])
+    return NOMBRE_DESCONOCIDO
+
+
+def buscar_problema(proceso):
+    """Devuelve un texto con el problema del proceso, o None si está bien."""
+    if not isinstance(proceso, dict):
+        return "no tiene el formato de un proceso"
+    for campo in CAMPOS_OBLIGATORIOS:
+        if campo not in proceso:
+            return "falta el campo " + campo
+    for campo in CAMPOS_NUMERICOS:
+        if not es_numero_valido(proceso[campo]):
+            return "el campo " + campo + " debe ser un número mayor o igual a cero"
+    if proceso["porcentaje_reglas_claras"] > PORCENTAJE_MAXIMO:
+        return "el porcentaje de reglas claras no puede ser mayor que 100"
+    if limpiar_texto(proceso["estabilidad"]) not in PUNTOS_ESTABILIDAD:
+        return "la estabilidad debe ser alta, media o baja"
+    return None
 
 
 def calcular_horas_ahorradas(transacciones_mes, minutos_por_transaccion):
@@ -143,7 +198,7 @@ def evaluar_proceso(proceso):
     )
     complejidad = calcular_puntaje_complejidad(
         proceso["cantidad_aplicaciones"],
-        proceso["estabilidad"],
+        limpiar_texto(proceso["estabilidad"]),
     )
     clasificacion = clasificar_proceso(beneficio, complejidad)
     return {
@@ -156,11 +211,16 @@ def evaluar_proceso(proceso):
 
 
 def evaluar_procesos(procesos):
-    """Devuelve la lista de resultados de todos los procesos."""
+    """Devuelve dos listas: los resultados y los avisos de procesos omitidos."""
     resultados = []
+    avisos = []
     for proceso in procesos:
-        resultados.append(evaluar_proceso(proceso))
-    return resultados
+        problema = buscar_problema(proceso)
+        if problema is None:
+            resultados.append(evaluar_proceso(proceso))
+        else:
+            avisos.append(obtener_nombre(proceso) + ": " + problema)
+    return resultados, avisos
 
 
 def obtener_beneficio(resultado):
@@ -184,7 +244,7 @@ def filtrar_por_clasificacion(resultados, clasificacion):
 
 def sumar_horas(resultados):
     """Devuelve la suma de las horas de una lista de resultados."""
-    total_horas = 0
+    total_horas = 0.0
     for resultado in resultados:
         total_horas = total_horas + resultado["horas"]
     return round(total_horas, DECIMALES_HORAS)
@@ -201,6 +261,9 @@ def mostrar_tabla(titulo, resultados):
         f"{'Complejidad':>{ANCHO_COLUMNA}}"
         f"   Clasificación"
     )
+    if len(resultados) == 0:
+        print("No hay procesos para mostrar.")
+        return
     for resultado in resultados:
         print(
             f"{resultado['nombre']:<{ANCHO_NOMBRE}}"
@@ -211,9 +274,20 @@ def mostrar_tabla(titulo, resultados):
         )
 
 
+def mostrar_avisos(avisos):
+    """Muestra en pantalla los procesos que se omitieron y el motivo."""
+    if len(avisos) == 0:
+        return
+    print()
+    print("PROCESOS OMITIDOS POR DATOS INCORRECTOS")
+    for aviso in avisos:
+        print("- " + aviso)
+
+
 def main():
     """Ejecuta el programa completo."""
-    resultados = evaluar_procesos(PROCESOS)
+    resultados, avisos = evaluar_procesos(PROCESOS)
+    mostrar_avisos(avisos)
     resultados_ordenados = ordenar_por_beneficio(resultados)
     mostrar_tabla("LISTADO COMPLETO DE PROCESOS", resultados_ordenados)
 
@@ -229,5 +303,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    
