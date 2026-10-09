@@ -24,6 +24,16 @@ INICIO
 
   PARA cada proceso de la lista HACER
 
+      Revisar los datos del proceso:
+      - que tenga todos los campos
+      - que los números sean números y no sean negativos
+      - que el porcentaje no pase de 100
+      - que la estabilidad sea alta, media o baja
+
+      SI el proceso tiene algún problema:
+          Guardar un aviso con el nombre y el problema
+          Pasar al siguiente proceso
+
       Calcular las horas ahorradas al mes:
 
       horas = (transacciones_mes × minutos_por_transaccion) / 60
@@ -65,6 +75,11 @@ INICIO
       beneficio, complejidad y clasificación.
 
   FIN PARA
+
+  Mostrar los avisos de los procesos omitidos.
+
+  SI no quedó ningún proceso:
+      Mostrar "No hay procesos para mostrar."
 
   Ordenar los procesos de mayor a menor beneficio.
 
